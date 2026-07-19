@@ -1,0 +1,18 @@
+{
+  "client": "{{CLIENT_NAME}}",
+  "maintainer": "Direct Launch",
+  "site": {
+    "title": "{{CLIENT_NAME}} Brand Toolkit",
+    "description": "Guidelines and principles for creating with the {{CLIENT_NAME}} brand",
+    "publish": ["identity", "foundations", "web", "business"],
+    "exclude": ["business/competitors.md", "legal"]
+  },
+  "required": [
+    "brand.json",
+    "business/overview.md",
+    "business/glossary.md",
+    "identity/voice-and-tone.md",
+    "foundations/colour.md",
+    "foundations/typography.md"
+  ]
+}
