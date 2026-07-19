@@ -32,6 +32,17 @@ cd site && npm install && npm run dev
 
 ## Editing
 
+**Claude** — `.claude/skills/brand-editor/` teaches any Claude session with
+repo access how to edit this brand safely: which file owns which fact, the
+branch-and-PR workflow, and what needs client sign-off.
+
+**Studio** — `node studio/server.mjs` opens a local editor at
+`http://localhost:4321` for colour pickers, live contrast, and Markdown editing
+with block previews. It writes to these files directly; commit with git as
+normal.
+
+### By hand
+
 Edit the Markdown and JSON files directly. The published site is generated from
 them — never edit the site content by hand.
 

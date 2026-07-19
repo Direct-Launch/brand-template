@@ -6,3 +6,4 @@ site/src/content/docs/
 *.log
 site/public/assets/
 site/src/styles/tokens.css
+studio/.cache/

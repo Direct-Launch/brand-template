@@ -10,7 +10,8 @@
     "predev": "npm run tokens && npm run sync",
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "studio": "node ../studio/server.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.30.0",

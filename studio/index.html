@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Brand Studio</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #16181d; --muted: #6b7280;
+    --line: #e3e5e9; --panel: #f7f8fa; --accent: #16181d;
+    --pass: #15803d; --warn: #a16207; --fail: #b91c1c;
+    --radius: 6px;
+    font-family: var(--brand-font-body, ui-sans-serif, system-ui, sans-serif);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  header {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.7rem 1.1rem; border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  header h1 { font-size: 0.95rem; margin: 0; font-weight: 600; }
+  header h1 small { display: block; font-weight: 400; color: var(--muted); font-size: 0.72rem; }
+  nav { display: flex; gap: 0.25rem; margin-left: auto; }
+  nav button {
+    border: 1px solid transparent; background: none; color: var(--muted);
+    padding: 0.35rem 0.75rem; border-radius: var(--radius); cursor: pointer; font: inherit;
+  }
+  nav button[aria-selected="true"] { background: var(--panel); color: var(--fg); border-color: var(--line); font-weight: 600; }
+  nav button:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .git { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+  .git b { color: var(--fg); }
+
+  main { padding: 1.1rem; max-width: 1400px; }
+  .view[hidden] { display: none; }
+  h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 1.6rem 0 0.7rem; }
+  h2:first-child { margin-top: 0; }
+
+  .btn {
+    border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+    padding: 0.4rem 0.85rem; border-radius: var(--radius); cursor: pointer; font: inherit;
+  }
+  .btn:hover { background: var(--panel); }
+  .btn--primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn--primary:hover { opacity: 0.88; background: var(--accent); }
+  .btn[disabled] { opacity: 0.45; cursor: default; }
+
+  .bar { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; }
+  .bar .status { font-size: 0.8rem; color: var(--muted); }
+  .bar .status.ok { color: var(--pass); }
+  .bar .status.err { color: var(--fail); }
+
+  /* tokens */
+  .grid { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+  .tok { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .tok__chip { height: 66px; border: none; padding: 0; width: 100%; cursor: pointer; display: block; }
+  .tok__body { padding: 0.6rem 0.7rem 0.7rem; }
+  .tok__name { font-weight: 600; text-transform: capitalize; }
+  .tok__row { display: flex; gap: 0.4rem; align-items: center; margin-top: 0.4rem; }
+  input[type="text"], textarea, select {
+    width: 100%; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 0.35rem 0.5rem; font: inherit; background: var(--bg); color: var(--fg);
+  }
+  .tok input[type="text"] { font-family: ui-monospace, monospace; font-size: 0.78rem; }
+  .tok textarea { font-size: 0.78rem; margin-top: 0.4rem; resize: vertical; min-height: 4.2em; }
+  label.mini { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.5rem; }
+  .warnrule { color: var(--fail); font-size: 0.72rem; margin-top: 0.35rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { text-align: left; font-weight: 600; padding: 0.4rem 0.6rem; border-bottom: 2px solid var(--line); }
+  td { padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line); }
+  .dot { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; border: 1px solid var(--line); vertical-align: -0.08em; margin-right: 0.3rem; }
+  .badge { display: inline-block; padding: 0.05rem 0.4rem; border: 1px solid currentColor; border-radius: 2px; font-size: 0.68rem; font-weight: 700; }
+  .badge--pass { color: var(--pass); } .badge--warn { color: var(--warn); } .badge--fail { color: var(--fail); }
+  .num { font-variant-numeric: tabular-nums; }
+  .sample { white-space: nowrap; padding: 0.3rem 0.6rem; }
+
+  /* content */
+  .split { display: grid; grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .files { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; position: sticky; top: 4.2rem; }
+  .files__group { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0.55rem 0.7rem 0.25rem; }
+  .files button {
+    display: block; width: 100%; text-align: left; border: none; background: none;
+    padding: 0.35rem 0.7rem; cursor: pointer; font: inherit; color: var(--fg);
+  }
+  .files button:hover { background: var(--panel); }
+  .files button[aria-current="true"] { background: var(--panel); font-weight: 600; }
+  .files .todo { float: right; font-size: 0.68rem; color: var(--warn); }
+  #editor { width: 100%; min-height: 68vh; font-family: ui-monospace, monospace; font-size: 0.8rem; line-height: 1.6; tab-size: 2; }
+  .preview { border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem; min-height: 68vh; overflow: auto; }
+  .preview h1 { font-size: 1.35rem; margin: 0 0 0.6rem; }
+  .preview h2 { font-size: 1.05rem; text-transform: none; letter-spacing: 0; color: var(--fg); margin: 1.3rem 0 0.5rem; }
+  .preview h3 { font-size: 0.95rem; margin: 1.1rem 0 0.4rem; }
+  .preview p { margin: 0.55rem 0; }
+  .preview blockquote { margin: 0.7rem 0; padding-left: 0.85rem; border-left: 3px solid var(--line); color: var(--muted); }
+  .preview pre { background: var(--panel); padding: 0.6rem 0.8rem; border-radius: var(--radius); overflow: auto; font-size: 0.76rem; }
+  .fm { font-size: 0.7rem; color: var(--muted); border-bottom: 1px dashed var(--line); padding-bottom: 0.5rem; margin-bottom: 0.8rem; }
+
+  .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0.8rem 0; }
+  .dd__col { border: 1px solid var(--line); border-top-width: 3px; border-radius: var(--radius); padding: 0.6rem 0.75rem; }
+  .dd__col--do { border-top-color: var(--pass); } .dd__col--dont { border-top-color: var(--fail); }
+  .dd__head { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .dd__why { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); margin: 0; }
+
+  .sw { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); margin: 0.7rem 0; }
+  .sw figure { margin: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .sw div { height: 52px; } .sw figcaption { padding: 0.35rem 0.5rem; font-size: 0.72rem; }
+  .spec { border: 1px solid var(--line); border-radius: var(--radius); padding: 0.9rem; margin: 0.7rem 0; }
+  .spec__hero { font-size: 2.4rem; line-height: 1.1; }
+  .out { background: var(--panel); border-radius: var(--radius); padding: 0.8rem 1rem; font-family: ui-monospace, monospace; font-size: 0.76rem; white-space: pre-wrap; }
+  .hint { color: var(--muted); font-size: 0.8rem; }
+
+  @media (max-width: 1080px) { .split { grid-template-columns: 1fr; } .files { position: static; } .preview { min-height: 30vh; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="clientName">Brand Studio<small id="repoPath">loading…</small></h1>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-view="tokens">Tokens</button>
+    <button role="tab" aria-selected="false" data-view="content">Content</button>
+    <button role="tab" aria-selected="false" data-view="checks">Checks</button>
+  </nav>
+  <span class="git" id="git"></span>
+</header>
+
+<main>
+  <!-- TOKENS -->
+  <section class="view" id="view-tokens">
+    <div class="bar">
+      <button class="btn btn--primary" id="saveTokens">Save tokens</button>
+      <span class="status" id="tokStatus">Edits are written to brand.json. Review with git diff before committing.</span>
+    </div>
+
+    <h2>Colour</h2>
+    <div class="grid" id="colours"></div>
+
+    <h2>Contrast — live</h2>
+    <div id="contrastTable"></div>
+
+    <h2>Type</h2>
+    <div class="grid" id="fonts"></div>
+
+    <h2>Scale and spacing</h2>
+    <div class="grid" id="scales"></div>
+  </section>
+
+  <!-- CONTENT -->
+  <section class="view" id="view-content" hidden>
+    <div class="split">
+      <aside class="files" id="files"></aside>
+      <div>
+        <div class="bar">
+          <button class="btn btn--primary" id="saveFile" disabled>Save file</button>
+          <button class="btn" id="insertDodont">Insert do/don't</button>
+          <span class="status" id="fileStatus"></span>
+        </div>
+        <textarea id="editor" spellcheck="true" placeholder="Select a file…"></textarea>
+      </div>
+      <div class="preview" id="preview"><p class="hint">Preview appears here. Visual blocks render live.</p></div>
+    </div>
+  </section>
+
+  <!-- CHECKS -->
+  <section class="view" id="view-checks" hidden>
+    <div class="bar">
+      <button class="btn btn--primary" id="runValidate">Run validator</button>
+      <button class="btn" id="runContrast">Check contrast</button>
+      <span class="status" id="checkStatus"></span>
+    </div>
+    <div class="out" id="checkOut">Nothing run yet.</div>
+    <h2>Uncommitted changes</h2>
+    <div class="out" id="gitOut">—</div>
+  </section>
+</main>
+
+<script>
+/* ---------------- state ---------------- */
+let STATE = null, TOKENS = null, currentFile = null, dirty = false;
+const $ = (s) => document.querySelector(s);
+const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const api = async (p, opts) => (await fetch(p, opts)).json();
+
+/* ---------------- contrast ---------------- */
+const lum = (hex) => {
+  const h = hex.replace('#', '');
+  const f = h.length === 3 ? [...h].map((c) => c + c).join('') : h;
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(f.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const verdict = (r) => r >= 7 ? ['AAA', 'pass'] : r >= 4.5 ? ['AA', 'pass'] : r >= 3 ? ['AA Large', 'warn'] : ['Fail', 'fail'];
+const isHex = (v) => typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v);
+
+/* ---------------- token helpers ---------------- */
+function flatten(node, trail = [], out = {}) {
+  if (node && typeof node === 'object') {
+    if ('$value' in node) out[trail.join('.')] = node;
+    else for (const [k, v] of Object.entries(node)) if (!k.startsWith('$')) flatten(v, [...trail, k], out);
+  }
+  return out;
+}
+const at = (obj, p) => p.split('.').reduce((o, k) => o?.[k], obj);
+
+/* ---------------- render: tokens ---------------- */
+function renderTokens() {
+  const flat = flatten(TOKENS);
+  const colours = Object.entries(flat).filter(([, t]) => t.$type === 'color');
+
+  $('#colours').innerHTML = colours.map(([k, t]) => `
+    <div class="tok">
+      <input class="tok__chip" type="color" value="${isHex(t.$value) ? t.$value : '#000000'}"
+             data-token="${k}" data-field="colour" aria-label="${esc(k)} colour" />
+      <div class="tok__body">
+        <span class="tok__name">${esc(k.split('.').pop())}</span>
+        <div class="tok__row">
+          <input type="text" value="${esc(t.$value)}" data-token="${k}" data-field="hex" aria-label="${esc(k)} hex" />
+        </div>
+        <label class="mini" for="d-${k}">Usage rule — agents read this</label>
+        <textarea id="d-${k}" data-token="${k}" data-field="desc"
+          placeholder="Where may this be used, and where must it not be?">${esc(t.$description || '')}</textarea>
+        ${t.$description ? '' : '<p class="warnrule">No usage rule. Agents will have nothing to follow.</p>'}
+      </div>
+    </div>`).join('');
+
+  const fonts = Object.entries(flat).filter(([, t]) => t.$type === 'fontFamily');
+  $('#fonts').innerHTML = fonts.map(([k, t]) => `
+    <div class="tok">
+      <div class="tok__body">
+        <span class="tok__name">${esc(k.split('.').pop())}</span>
+        <label class="mini" for="f-${k}">Font stack — comma separated</label>
+        <input id="f-${k}" type="text" value="${esc([].concat(t.$value).join(', '))}" data-token="${k}" data-field="stack" />
+        <label class="mini" for="fd-${k}">Usage rule</label>
+        <textarea id="fd-${k}" data-token="${k}" data-field="desc">${esc(t.$description || '')}</textarea>
+        <p style="font-family:${esc([].concat(t.$value).join(', '))};font-size:1.6rem;margin:.5rem 0 0">Aa Bb Cc 123</p>
+      </div>
+    </div>`).join('');
+
+  const scales = Object.entries(flat).filter(([k, t]) => /^(fontSize|space|radius)\./.test(k) && t.$type === 'dimension');
+  const groups = {};
+  for (const [k, t] of scales) (groups[k.split('.')[0]] ??= []).push([k, t]);
+  $('#scales').innerHTML = Object.entries(groups).map(([g, items]) => `
+    <div class="tok"><div class="tok__body">
+      <span class="tok__name">${esc(g)}</span>
+      ${items.map(([k, t]) => `
+        <div class="tok__row">
+          <label class="mono" style="min-width:3.5rem;font-size:.72rem" for="s-${k}">${esc(k.split('.').pop())}</label>
+          <input id="s-${k}" type="text" value="${esc(t.$value)}" data-token="${k}" data-field="dim" />
+        </div>`).join('')}
+    </div></div>`).join('');
+
+  renderContrast();
+}
+
+function renderContrast() {
+  const flat = flatten(TOKENS);
+  const cols = Object.entries(flat).filter(([, t]) => t.$type === 'color' && isHex(t.$value))
+    .map(([k, t]) => [k.split('.').pop(), t.$value]);
+  const rows = [];
+  for (const [fg, fv] of cols) for (const [bg, bv] of cols)
+    if (fg !== bg && !rows.some((r) => r[0] === bg && r[1] === fg)) rows.push([fg, bg, ratio(fv, bv), fv, bv]);
+  rows.sort((a, b) => b[2] - a[2]);
+  $('#contrastTable').innerHTML = `<table>
+    <thead><tr><th>Foreground</th><th>Background</th><th>Ratio</th><th>WCAG 2.2</th><th>Preview</th></tr></thead>
+    <tbody>${rows.map(([fg, bg, r, fv, bv]) => {
+      const [label, level] = verdict(r);
+      return `<tr>
+        <td><span class="dot" style="background:${fv}"></span>${esc(fg)}</td>
+        <td><span class="dot" style="background:${bv}"></span>${esc(bg)}</td>
+        <td class="num">${r.toFixed(2)}:1</td>
+        <td><span class="badge badge--${level}">${label}</span></td>
+        <td class="sample" style="background:${bv};color:${fv}">Sample text</td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+/* token edits */
+document.addEventListener('input', (e) => {
+  const el = e.target, key = el.dataset?.token;
+  if (!key) return;
+  const tok = at(TOKENS, key);
+  if (!tok) return;
+  const f = el.dataset.field;
+  if (f === 'colour' || f === 'hex') {
+    tok.$value = el.value;
+    const card = el.closest('.tok');
+    const chip = card.querySelector('[data-field="colour"]'), hex = card.querySelector('[data-field="hex"]');
+    if (f === 'colour') hex.value = el.value; else if (isHex(el.value)) chip.value = el.value;
+    renderContrast();
+  } else if (f === 'desc') tok.$description = el.value;
+  else if (f === 'stack') tok.$value = el.value.split(',').map((s) => s.trim()).filter(Boolean);
+  else if (f === 'dim') tok.$value = el.value;
+  $('#tokStatus').textContent = 'Unsaved token changes';
+  $('#tokStatus').className = 'status err';
+});
+
+$('#saveTokens').onclick = async () => {
+  const r = await api('/api/tokens', {
+    method: 'PUT', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ tokens: TOKENS }),
+  });
+  $('#tokStatus').textContent = r.error ? r.error : 'Saved to brand.json — site CSS regenerated.';
+  $('#tokStatus').className = 'status ' + (r.error ? 'err' : 'ok');
+  applyTheme(); loadGit();
+};
+
+/* ---------------- render: content ---------------- */
+function renderFileList() {
+  const groups = {};
+  for (const f of STATE.files) (groups[f.dir] ??= []).push(f);
+  $('#files').innerHTML = Object.entries(groups).map(([dir, items]) => `
+    <div class="files__group">${esc(dir)}</div>
+    ${items.map((f) => `<button data-file="${esc(f.path)}" aria-current="${f.path === currentFile}">
+      ${esc(f.title)}${f.todos ? `<span class="todo">${f.todos} TODO</span>` : ''}
+    </button>`).join('')}`).join('');
+}
+
+$('#files').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-file]');
+  if (!btn) return;
+  if (dirty && !confirm('Unsaved changes will be lost. Continue?')) return;
+  currentFile = btn.dataset.file;
+  const { content } = await api('/api/file?path=' + encodeURIComponent(currentFile));
+  $('#editor').value = content;
+  dirty = false; $('#saveFile').disabled = true;
+  $('#fileStatus').textContent = currentFile; $('#fileStatus').className = 'status';
+  renderFileList(); renderPreview();
+});
+
+$('#editor').addEventListener('input', () => {
+  dirty = true; $('#saveFile').disabled = false;
+  $('#fileStatus').textContent = 'Unsaved'; $('#fileStatus').className = 'status err';
+  renderPreview();
+});
+
+$('#saveFile').onclick = async () => {
+  const r = await api('/api/file', {
+    method: 'PUT', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ path: currentFile, content: $('#editor').value }),
+  });
+  dirty = false; $('#saveFile').disabled = true;
+  $('#fileStatus').textContent = r.error ? r.error : 'Saved ' + currentFile;
+  $('#fileStatus').className = 'status ' + (r.error ? 'err' : 'ok');
+  loadGit();
+};
+
+$('#insertDodont').onclick = () => {
+  const ta = $('#editor'), snippet = '\n```dodont\ndo: \ndont: \nwhy: \n```\n';
+  const i = ta.selectionStart;
+  ta.value = ta.value.slice(0, i) + snippet + ta.value.slice(i);
+  ta.focus(); ta.selectionStart = ta.selectionEnd = i + 14;
+  dirty = true; $('#saveFile').disabled = false; renderPreview();
+};
+
+/* ---------------- markdown + block preview ---------------- */
+function parseBlock(src) {
+  const o = {};
+  for (const line of src.split('\n')) {
+    const m = line.match(/^\s*([\w-]+)\s*:\s*(.*)$/);
+    if (!m) continue;
+    if (m[1] in o) o[m[1]] = [].concat(o[m[1]], m[2].trim()); else o[m[1]] = m[2].trim();
+  }
+  return o;
+}
+
+function renderBlock(lang, src) {
+  const flat = flatten(TOKENS), o = parseBlock(src);
+  if (lang === 'dodont') {
+    const col = (v, k, label) => `<div class="dd__col dd__col--${k}"><div class="dd__head">${label}</div>${
+      [].concat(v ?? []).map((x) => `<p>${esc(x)}</p>`).join('')}</div>`;
+    return `<div class="dd">${col(o.do, 'do', 'Do write')}${col(o.dont, 'dont', "Don't write")}${
+      o.why ? `<p class="dd__why"><strong>Why:</strong> ${esc(o.why)}</p>` : ''}</div>`;
+  }
+  if (lang === 'palette' || lang === 'swatch') {
+    const items = lang === 'swatch'
+      ? Object.entries(flat).filter(([k]) => k === o.token)
+      : Object.entries(flat).filter(([k, t]) => t.$type === 'color' && k.startsWith((o.group || 'colour') + '.'));
+    return `<div class="sw">${items.map(([k, t]) => `<figure>
+      <div style="background:${esc(t.$value)}"></div>
+      <figcaption><strong>${esc(k.split('.').pop())}</strong><br><code>${esc(t.$value)}</code></figcaption>
+    </figure>`).join('')}</div>`;
+  }
+  if (lang === 'specimen') {
+    const t = flat[o.token || 'font.heading'];
+    if (!t) return `<pre>Unknown token: ${esc(o.token)}</pre>`;
+    const stack = [].concat(t.$value).join(', ');
+    return `<div class="spec" style="font-family:${esc(stack)}">
+      <div class="spec__hero">${esc(o.text || 'Aa')}</div>
+      <div style="opacity:.7;margin-top:.4rem">AaBbCc 0123456789 &amp; £</div>
+      <code style="font-size:.72rem">${esc(stack)}</code></div>`;
+  }
+  if (lang === 'type-scale' || lang === 'spacing') {
+    const pre = lang === 'spacing' ? 'space.' : 'fontSize.';
+    const items = Object.entries(flat).filter(([k]) => k.startsWith(pre));
+    return `<div class="spec">${items.map(([k, t]) => lang === 'spacing'
+      ? `<div style="display:flex;gap:.6rem;align-items:center;padding:.15rem 0"><code style="min-width:2rem;font-size:.72rem">${esc(k.split('.').pop())}</code><span style="height:.9rem;width:${esc(t.$value)};background:var(--accent);display:inline-block"></span><span style="font-size:.72rem;opacity:.6">${esc(t.$value)}</span></div>`
+      : `<div style="font-size:${esc(t.$value)};line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.text || 'The quick brown fox')}</div>`
+    ).join('')}</div>`;
+  }
+  if (lang === 'contrast') { renderContrast(); return `<p class="hint">Contrast matrix — see the Tokens tab for the live table.</p>`; }
+  if (lang === 'tokens' || lang === 'logo') return `<p class="hint">Renders as a ${esc(lang)} block on the published site.</p>`;
+  return null;
+}
+
+function md(src) {
+  let out = '', fm = '';
+  if (src.startsWith('---')) {
+    const end = src.indexOf('\n---', 3);
+    if (end > -1) { fm = src.slice(4, end); src = src.slice(end + 4); }
+  }
+  if (fm) out += `<div class="fm">${esc(fm.trim()).replace(/\n/g, ' · ')}</div>`;
+
+  const lines = src.split('\n');
+  let i = 0, para = [], table = [];
+  const flushP = () => { if (para.length) { out += `<p>${inline(para.join(' '))}</p>`; para = []; } };
+  const flushT = () => {
+    if (!table.length) return;
+    const rows = table.filter((r) => !/^\s*\|[\s:|-]+\|\s*$/.test(r))
+      .map((r) => r.replace(/^\||\|$/g, '').split('|').map((c) => c.trim()));
+    if (rows.length) {
+      out += `<table><thead><tr>${rows[0].map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${
+        rows.slice(1).map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+    table = [];
+  };
+  const inline = (s) => esc(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="#" title="$2">$1</a>');
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith('```')) {
+      flushP(); flushT();
+      const lang = line.slice(3).trim();
+      const body = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('```')) body.push(lines[i++]);
+      i++;
+      out += renderBlock(lang, body.join('\n')) ?? `<pre>${esc(body.join('\n'))}</pre>`;
+      continue;
+    }
+    if (/^\s*\|/.test(line)) { flushP(); table.push(line); i++; continue; }
+    flushT();
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if (h) { flushP(); out += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`; i++; continue; }
+    if (/^\s*[-*]\s+/.test(line)) {
+      flushP(); const items = [];
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*[-*]\s+/, ''));
+      out += `<ul>${items.map((x) => `<li>${inline(x)}</li>`).join('')}</ul>`; continue;
+    }
+    if (line.startsWith('>')) { flushP(); out += `<blockquote>${inline(line.replace(/^>\s?/, ''))}</blockquote>`; i++; continue; }
+    if (!line.trim()) { flushP(); i++; continue; }
+    if (line.startsWith('<!--')) { i++; continue; }
+    para.push(line); i++;
+  }
+  flushP(); flushT();
+  return out;
+}
+
+const renderPreview = () => { $('#preview').innerHTML = md($('#editor').value) || '<p class="hint">Empty file.</p>'; };
+
+/* ---------------- checks ---------------- */
+async function runCheck(endpoint, label) {
+  $('#checkStatus').textContent = 'Running…'; $('#checkStatus').className = 'status';
+  const r = await api(endpoint, { method: 'POST' });
+  $('#checkOut').textContent = r.output || '(no output)';
+  $('#checkStatus').textContent = r.code === 0 ? label + ' passed' : label + ' failed';
+  $('#checkStatus').className = 'status ' + (r.code === 0 ? 'ok' : 'err');
+}
+$('#runValidate').onclick = () => runCheck('/api/validate', 'Validation');
+$('#runContrast').onclick = () => runCheck('/api/contrast', 'Contrast check');
+
+async function loadGit() {
+  const { changes = [], error } = await api('/api/git');
+  $('#git').innerHTML = error ? esc(error) : `<b>${changes.length}</b> uncommitted change${changes.length === 1 ? '' : 's'}`;
+  $('#gitOut').textContent = error ? error : (changes.join('\n') || 'Working tree clean.');
+}
+
+/* ---------------- theme + boot ---------------- */
+function applyTheme() {
+  const flat = flatten(TOKENS);
+  const v = (k) => flat[k]?.$value;
+  const r = document.documentElement.style;
+  if (isHex(v('colour.primary'))) r.setProperty('--accent', v('colour.primary'));
+  if (isHex(v('colour.paper'))) r.setProperty('--bg', v('colour.paper'));
+  if (isHex(v('colour.ink'))) r.setProperty('--fg', v('colour.ink'));
+  const body = v('font.body');
+  if (body && !String(body).includes('TODO')) r.setProperty('--brand-font-body', [].concat(body).join(', '));
+}
+
+document.querySelectorAll('nav button').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('nav button').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    document.querySelectorAll('.view').forEach((v) => (v.hidden = v.id !== 'view-' + b.dataset.view));
+    if (b.dataset.view === 'checks') loadGit();
+  };
+});
+
+window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+(async function boot() {
+  STATE = await api('/api/state');
+  TOKENS = STATE.tokens;
+  $('#clientName').firstChild.textContent = (STATE.config.client || 'Brand') + ' — Studio';
+  $('#repoPath').textContent = STATE.root;
+  applyTheme(); renderTokens(); renderFileList(); loadGit();
+})();
+</script>
+</body>
+</html>
