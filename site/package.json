@@ -4,9 +4,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "tokens": "node ../scripts/build-tokens.mjs",
     "sync": "node ../scripts/sync-content.mjs",
-    "dev": "npm run sync && astro dev",
-    "build": "npm run sync && astro build",
+    "prebuild": "npm run tokens && npm run sync",
+    "predev": "npm run tokens && npm run sync",
+    "dev": "astro dev",
+    "build": "astro build",
     "preview": "astro preview"
   },
   "dependencies": {

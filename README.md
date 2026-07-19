@@ -18,6 +18,18 @@ tokens. Maintained by Direct Launch.
 | `assets/`       | Source files — logos, fonts, approved photography                |
 | `site/`         | Astro Starlight site that renders the public toolkit             |
 
+## The visual guide
+
+The Markdown here is the source of truth; running the site turns it into a
+visual brand toolkit styled in the client's own palette and typefaces. Colour
+swatches, contrast tables, type specimens, spacing scales and do/don't cards
+are all generated from `brand.json` and the fenced blocks in these files, so
+the guide can never disagree with the tokens.
+
+```bash
+cd site && npm install && npm run dev
+```
+
 ## Editing
 
 Edit the Markdown and JSON files directly. The published site is generated from

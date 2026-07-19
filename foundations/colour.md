@@ -3,8 +3,12 @@ title: Colour
 description: Palette roles, ratios, and approved pairings. Values live in brand.json.
 ---
 
-**Values are defined in [`brand.json`](../brand.json).** This file explains how
-to use them. If the two disagree, `brand.json` wins and this file needs fixing.
+**Values are defined in [`brand.json`](../brand.json).** The swatches below are
+rendered from it directly — they cannot drift out of date.
+
+```palette
+group: colour
+```
 
 ## Roles
 
@@ -17,17 +21,15 @@ to use them. If the two disagree, `brand.json` wins and this file needs fixing.
 ## Ratio
 
 A typical layout should be roughly TODO% neutral, TODO% primary, TODO% accent.
-Accent colour must never dominate.
 
-## Approved pairings
+## Contrast
 
-| Foreground | Background | Contrast | Passes |
-| ---------- | ---------- | -------- | ------ |
-| TODO | TODO | TODO:1 | AA / AAA |
+Every pairing, computed at build time against WCAG 2.2. Anything marked **Fail**
+must not carry text.
 
-Any pairing not listed here must be contrast-checked before use — see
-[accessibility](./accessibility.md).
+```contrast
+```
 
 ## Forbidden combinations
 
-TODO. Pairings that are legible but off-brand, and pairings that fail contrast.
+TODO. Pairings that are legible but off-brand, and any that fail above.

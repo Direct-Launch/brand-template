@@ -80,3 +80,44 @@ Read its AGENTS.md before writing copy or styling components.
 | Every 6 months | Review `legal/licences.md` for expiries |
 | Annually | Review `business/overview.md` priorities with the client |
 | On brand change | Tag a release, update `CHANGELOG.md` |
+
+## The visual layer
+
+The site is not a separate design job — it derives from the same files.
+
+`scripts/build-tokens.mjs` reads `brand.json` and writes
+`site/src/styles/tokens.css`, which does two things: exposes every token as a
+`--brand-*` custom property, and overrides Starlight's own variables so the
+toolkit renders in the client's palette and typefaces. Change a hex in
+`brand.json` and the entire site re-skins on the next build.
+
+`site/src/plugins/remark-brand-blocks.mjs` turns fenced blocks into live
+specimens:
+
+| Block | Renders | Options |
+| ----- | ------- | ------- |
+| `palette` | Swatch grid with hex, CSS var, usage rule, best contrast pairing | `group:`, `only:` |
+| `swatch` | A single swatch | `token:` |
+| `contrast` | WCAG 2.2 matrix computed at build time, with live previews | `pairs:` (defaults to every combination) |
+| `type-scale` | The full size scale, rendered in the brand face | `text:`, `font:` |
+| `specimen` | Large type specimen with weights and character set | `token:`, `text:`, `weights:` |
+| `spacing` | Spacing scale as bars | — |
+| `dodont` | Side-by-side do/don't cards | `do:`, `dont:` (repeatable), `why:` |
+| `logo` | Logo variants on correct backgrounds | `variants:` |
+| `tokens` | Full token reference table | `group:` |
+
+The reason for fenced blocks rather than MDX components: an agent reading the
+raw file from GitHub sees legible key/value text, while a human on the site
+sees a rendered swatch. One source, two audiences, no duplication.
+
+To theme further:
+
+- **Fonts** — add entries to `site.theme.fontFaces` (self-hosted, files in
+  `assets/fonts/`) or `site.theme.webfonts` (URLs) in `brand.config.json`.
+- **Logo in the header** — set `site.theme.logo`.
+- **Anything tokens can't express** — `site/src/styles/custom.css`, which is
+  never regenerated.
+
+Contrast figures are computed, not typed. If a pairing fails AA, the table says
+so on the client's own brand site — which tends to end the argument faster than
+you can.

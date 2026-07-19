@@ -12,20 +12,21 @@ description: How {{CLIENT_NAME}} speaks. Read before writing any customer-facing
 <!-- Do/don't pairs are the single most useful thing in this file.
      Write real sentences, not descriptions of sentences. -->
 
-| ✅ Do write | ❌ Don't write |
-| ----------- | -------------- |
-| TODO        | TODO           |
-| TODO        | TODO           |
-
-**Why:** TODO
+```dodont
+do: TODO — a real sentence, in this brand's voice.
+do: TODO — a second example.
+dont: TODO — the bland version a competitor would write.
+dont: TODO — a second counter-example.
+why: TODO — why the left column works and the right one doesn't.
+```
 
 ### 2. TODO — principle
 
-| ✅ Do write | ❌ Don't write |
-| ----------- | -------------- |
-| TODO        | TODO           |
-
-**Why:** TODO
+```dodont
+do: TODO
+dont: TODO
+why: TODO
+```
 
 ## Tone by context
 

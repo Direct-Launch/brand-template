@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /**
- * Copies the published brand folders into the Starlight content directory.
- * The Markdown at the repo root is the source of truth; site/src/content/docs
- * is a build artifact and is gitignored.
+ * Prepares the Starlight site from the repository's source files.
  *
- * Which folders get published is controlled by brand.config.json.
+ *   1. Copies published folders into site/src/content/docs
+ *   2. Copies assets/ into site/public/assets so logos and fonts resolve
+ *   3. Generates a full token reference page from brand.json
+ *   4. Generates the homepage from brand.config.json
+ *
+ * Everything it writes is a build artifact and is gitignored. The Markdown at
+ * the repo root remains the single source of truth.
  */
 import { readFile, mkdir, cp, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -13,9 +17,10 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const docs = path.join(root, 'site', 'src', 'content', 'docs');
+const pub = path.join(root, 'site', 'public');
 
 const config = JSON.parse(await readFile(path.join(root, 'brand.config.json'), 'utf8'));
-const { publish = [], exclude = [] } = config.site ?? {};
+const { publish = [], exclude = [], title, description } = config.site ?? {};
 
 await rm(docs, { recursive: true, force: true });
 await mkdir(docs, { recursive: true });
@@ -27,40 +32,98 @@ for (const folder of publish) {
   if (isExcluded(folder) || !existsSync(path.join(root, folder))) continue;
   await cp(path.join(root, folder), path.join(docs, folder), {
     recursive: true,
-    filter: (src) => {
-      const rel = path.relative(root, src).split(path.sep).join('/');
-      return !isExcluded(rel);
-    },
+    filter: (src) => !isExcluded(path.relative(root, src).split(path.sep).join('/')),
   });
   console.log(`  published  ${folder}/`);
 }
-
 for (const e of exclude) console.log(`  withheld   ${e}`);
 
-const index = `---
-title: ${config.site?.title ?? 'Brand Toolkit'}
-description: ${config.site?.description ?? ''}
+/* --- assets: logos, fonts, approved photography --- */
+if (existsSync(path.join(root, 'assets'))) {
+  await rm(path.join(pub, 'assets'), { recursive: true, force: true });
+  await mkdir(pub, { recursive: true });
+  await cp(path.join(root, 'assets'), path.join(pub, 'assets'), { recursive: true });
+  console.log('  copied     assets/ → site/public/assets/');
+}
+
+/* --- generated token reference --- */
+await writeFile(
+  path.join(docs, 'tokens.md'),
+  `---
+title: All tokens
+description: Every design token, its CSS variable, value, and usage rule. Generated from brand.json.
+---
+
+Generated from \`brand.json\` on every build. If something here is wrong, fix
+the JSON — not this page.
+
+## Colour
+
+\`\`\`palette
+group: colour
+\`\`\`
+
+## Contrast matrix
+
+\`\`\`contrast
+\`\`\`
+
+## Type
+
+\`\`\`type-scale
+\`\`\`
+
+## Spacing
+
+\`\`\`spacing
+\`\`\`
+
+## Full reference
+
+\`\`\`tokens
+\`\`\`
+`
+);
+
+/* --- homepage --- */
+const hero = config.site?.theme?.heroImage
+  ? `  image:\n    file: ../../assets/${config.site.theme.heroImage}\n`
+  : '';
+
+await writeFile(
+  path.join(docs, 'index.md'),
+  `---
+title: ${title ?? 'Brand Toolkit'}
+description: ${description ?? ''}
 template: splash
 hero:
-  tagline: ${config.site?.description ?? ''}
-  actions:
-    - text: Voice and tone
-      link: /identity/voice-and-tone/
+  tagline: ${description ?? ''}
+${hero}  actions:
+    - text: Start with voice
+      link: ./identity/voice-and-tone/
       icon: right-arrow
-    - text: Colour
-      link: /foundations/colour/
+    - text: Colour and type
+      link: ./foundations/colour/
       variant: minimal
 ---
 
-## Start here
+## The short version
 
-- **[Brand attributes](/identity/attributes/)** — what this brand is, in principle
-- **[Voice and tone](/identity/voice-and-tone/)** — how it speaks
-- **[Colour](/foundations/colour/)** and **[Typography](/foundations/typography/)** — how it looks
-- **[Accessibility](/foundations/accessibility/)** — the floor, not the ceiling
+\`\`\`palette
+group: colour
+\`\`\`
 
-Maintained by ${config.maintainer ?? 'Direct Launch'}. Source of truth is the
+## Where to go next
+
+- **[Brand attributes](./identity/attributes/)** — what this brand is, in principle
+- **[Voice and tone](./identity/voice-and-tone/)** — how it speaks, with examples
+- **[Colour](./foundations/colour/)** · **[Typography](./foundations/typography/)** · **[Logo](./foundations/logo/)**
+- **[Accessibility](./foundations/accessibility/)** — the floor, not the ceiling
+- **[All tokens](./tokens/)** — the machine-readable reference
+
+Maintained by ${config.maintainer ?? 'Direct Launch'}. The source of truth is the
 Markdown in this repository — edit there, not here.
-`;
-await writeFile(path.join(docs, 'index.md'), index);
+`
+);
+
 console.log('\nContent synced.');

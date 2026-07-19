@@ -4,3 +4,5 @@ site/.astro/
 site/src/content/docs/
 .DS_Store
 *.log
+site/public/assets/
+site/src/styles/tokens.css

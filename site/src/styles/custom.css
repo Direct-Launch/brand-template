@@ -1,0 +1,9 @@
+/* Per-client overrides. Safe to edit — this file is never regenerated.
+   Use it for anything the tokens can't express: a background texture, a
+   bespoke hero treatment, a border style particular to this brand. */
+
+.hero__tagline { max-width: 42ch; }
+
+/* Example: give the site the brand's own edge treatment.
+.sl-markdown-content img { border-radius: var(--brand-radius-md); }
+*/

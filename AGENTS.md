@@ -35,6 +35,28 @@ copy, design, or code you produce for this client must comply with it.
 - **Do not copy competitor language.** `business/competitors.md` exists for
   differentiation, not imitation.
 
+## Visual blocks in the Markdown
+
+Some files contain fenced blocks with languages like `palette`, `specimen`,
+`contrast`, `dodont`, `type-scale`, `spacing`, `logo`, and `tokens`. On the
+published site these render as live swatches, type specimens, and example
+cards. In the raw Markdown they are plain key/value text, which is what you
+will see — read them as data.
+
+```dodont
+do: The approved way to phrase something.
+dont: The rejected way.
+why: The reasoning.
+```
+
+Both columns are authoritative. The `dont` lines are as binding as the `do`
+lines — they exist because someone got it wrong before.
+
+If you edit these files, keep the block syntax intact. Values inside `palette`,
+`contrast`, `type-scale`, `spacing` and `tokens` blocks are pulled from
+`brand.json` at build time, so those blocks stay empty or take only a `group:`
+or `text:` hint — never hardcode a colour or size into one.
+
 ## When you change something
 
 If you edit files here, update `CHANGELOG.md` in the same change and flag

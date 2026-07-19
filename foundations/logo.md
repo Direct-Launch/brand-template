@@ -5,6 +5,10 @@ description: Logo variants, clear space, minimum sizes, and misuse.
 
 ## Variants
 
+```logo
+variants: primary, reversed, mono, mark
+```
+
 | Variant | File | Use when |
 | ------- | ---- | -------- |
 | Primary | `assets/logo/primary.svg` | Default, on light backgrounds |

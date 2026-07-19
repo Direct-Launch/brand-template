@@ -3,28 +3,37 @@ title: Typography
 description: Typefaces, scale, and usage rules.
 ---
 
-## Typefaces
+## Display face
 
-| Role | Typeface | Weights licensed | Fallback stack |
-| ---- | -------- | ---------------- | -------------- |
-| Heading | TODO | TODO | TODO |
-| Body | TODO | TODO | TODO |
+```specimen
+token: font.heading
+text: TODO
+weights: 400, 500
+```
+
+## Body face
+
+```specimen
+token: font.body
+text: TODO
+weights: 400, 500, 700
+```
 
 Licences are recorded in [`legal/licences.md`](../legal/licences.md). Check
 before using a weight not listed above — most licences are weight-specific.
 
 ## Scale
 
-Defined as `fontSize.*` in `brand.json`. Do not introduce sizes outside the
-scale.
+Defined as `fontSize.*` in `brand.json`. Do not introduce sizes outside it.
 
-| Token | Size | Used for |
-| ----- | ---- | -------- |
-| `3xl` | 3rem | Page hero |
-| `2xl` | 2rem | Section headings |
-| `xl` | 1.5rem | Sub-headings |
-| `base` | 1rem | Body copy — minimum size for paragraphs |
-| `sm` | 0.875rem | Captions, labels |
+```type-scale
+text: TODO — a phrase in this brand's voice
+```
+
+## Spacing rhythm
+
+```spacing
+```
 
 ## Rules
 
@@ -32,5 +41,4 @@ scale.
 - Measure: TODO characters per line maximum
 - Letter spacing: TODO
 - All caps: TODO — if permitted, always add letter spacing
-- Italics: TODO
 - Never: fake bold, fake italic, or justified body text

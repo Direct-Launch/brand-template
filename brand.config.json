@@ -4,8 +4,31 @@
   "site": {
     "title": "{{CLIENT_NAME}} Brand Toolkit",
     "description": "Guidelines and principles for creating with the {{CLIENT_NAME}} brand",
-    "publish": ["identity", "foundations", "web", "business"],
-    "exclude": ["business/competitors.md", "legal"]
+    "publish": [
+      "identity",
+      "foundations",
+      "web",
+      "business"
+    ],
+    "exclude": [
+      "business/competitors.md",
+      "legal"
+    ],
+    "theme": {
+      "logo": "assets/logo/mark.svg",
+      "logoReplacesTitle": false,
+      "heroImage": "",
+      "webfonts": [],
+      "fontFaces": [
+        {
+          "family": "TODO",
+          "src": "/assets/fonts/todo.woff2",
+          "weight": 400,
+          "style": "normal",
+          "format": "woff2"
+        }
+      ]
+    }
   },
   "required": [
     "brand.json",
